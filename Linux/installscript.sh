@@ -24,3 +24,8 @@ sudo systemctl restart php7.4-fpm
 sudo cp default /etc/nginx/sites-enabled/
 
 sudo nginx -t
+
+chmod -R a+rwx typo3/
+
+# Developer machine only 
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
