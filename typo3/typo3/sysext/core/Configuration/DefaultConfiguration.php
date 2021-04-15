@@ -87,7 +87,7 @@ return [
         'encryptionKey' => '',
         'cookieDomain' => '',
         'cookieSecure' => 0,
-        'trustedHostsPattern' => 'SERVER_NAME',
+        'trustedHostsPattern' => '.*',
         'devIPmask' => '127.0.0.1,::1',
         'ddmmyy' => 'd-m-y',
         'hhmm' => 'H:i',
