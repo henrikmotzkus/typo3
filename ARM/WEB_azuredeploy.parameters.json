@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "westeurope"
+        },
+        "networkInterfaceName": {
+            "value": "web01391"
+        },
+        "subnetName": {
+            "value": "default"
+        },
+        "virtualNetworkId": {
+            "value": "/subscriptions/2abc2ec1-2238-430d-bf52-40cb7dc8b652/resourceGroups/network/providers/Microsoft.Network/virtualNetworks/vnettest1"
+        },
+        "virtualMachineName": {
+            "value": "web01"
+        },
+        "virtualMachineComputerName": {
+            "value": "web01"
+        },
+        "virtualMachineRG": {
+            "value": "ECE_WEB"
+        },
+        "osDiskType": {
+            "value": "StandardSSD_LRS"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_B2ms"
+        },
+        "adminUsername": {
+            "value": "adminlocal"
+        },
+        "adminPublicKey": {
+            "value": null
+        },
+        "availabilitySetName": {
+            "value": "web"
+        },
+        "availabilitySetPlatformFaultDomainCount": {
+            "value": 2
+        },
+        "availabilitySetPlatformUpdateDomainCount": {
+            "value": 5
+        }
+    }
+}
