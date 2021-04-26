@@ -63,7 +63,7 @@
       },
       "_artifactsLocationSasToken": {
         "type": "securestring",
-        "defaultValue": "AFO2IHX5LVPCMMND2V222JDAQ2WR2",
+        "defaultValue": ""
         "metadata": {
           "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated"
         }
@@ -268,10 +268,9 @@
                     "autoUpgradeMinorVersion": true,
                     "settings": {
                       "fileUris": [
-                        "[uri(parameters('_artifactsLocation'), concat('installserver.sh', parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocation'), concat('workserver.py', parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocation'), concat('installscript.sh', parameters('_artifactsLocationSasToken')))]"
                       ],
-                      "commandToExecute": "bash installserver.sh"
+                      "commandToExecute": "bash installscript.sh"
                     }
                   }
                 }

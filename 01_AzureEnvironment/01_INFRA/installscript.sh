@@ -16,16 +16,17 @@ sudo apt-get install php7.4-xml
 sudo apt-get install php7.4-zip
 sudo apt-get install php7.4-intl
 
+cd /home/adminlocal
+
 git clone https://github.com/henrikmotzkus/typo3.git
 
 sudo cp /etc/php/7.4/fpm/php.ini /etc/php/7.4/fpm/php.inibackup
-sudo cp php.ini /etc/php/7.4/fpm/
+sudo cp ./typo3/01_AzureEnvironment/01_INFRA/php.ini /etc/php/7.4/fpm/
 
 sudo systemctl restart nginx.service
 sudo systemctl restart php7.4-fpm
 
-
-sudo cp default /etc/nginx/sites-enabled/
+sudo cp ./typo3/01_AzureEnvironment/01_INFRA/default /etc/nginx/sites-enabled/
 
 sudo nginx -t
 
