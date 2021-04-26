@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RESOURCE_GROUP='typo3test4'
+RESOURCE_GROUP='typo3test7'
 LOCATION='westeurope'
 
 az login
