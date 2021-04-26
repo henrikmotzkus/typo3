@@ -163,6 +163,40 @@
               "name": "[variables('bePoolName')]"
             }
           ],
+          "loadBalancingRules": [
+              {
+                  "name": "http",
+                  "properties": {
+                      "frontendIPConfiguration": {
+                          "id": "LoadBalancerFrontEnd"
+                      },
+                      "frontendPort": 80,
+                      "backendPort": 80,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 4,
+                      "protocol": "Tcp",
+                      "enableTcpReset": false,
+                      "loadDistribution": "Default",
+                      "backendAddressPool": {
+                          "id": "[variables('bePoolName')]"
+                      },
+                      "probe": {
+                          "id": "http"
+                      }
+                  }
+              }
+          ],
+          "probes": [
+              {
+                  "name": "http",
+                  "properties": {
+                      "protocol": "Tcp",
+                      "port": 80,
+                      "intervalInSeconds": 5,
+                      "numberOfProbes": 2
+                  }
+              }
+          ],
           "inboundNatPools": [
             {
               "name": "[variables('natPoolName')]",
