@@ -56,14 +56,14 @@
       },
       "_artifactsLocation": {
         "type": "string",
-        "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/201-vmss-bottle-autoscale/",
+        "defaultValue": "https://raw.githubusercontent.com/henrikmotzkus/typo3/main/01_AzureEnvironment/01_INFRA/",
         "metadata": {
           "description": "The base URI where artifacts required by this template are located"
         }
       },
       "_artifactsLocationSasToken": {
         "type": "securestring",
-        "defaultValue": "",
+        "defaultValue": "AFO2IHX5LVPCMMND2V222JDAQ2WR2",
         "metadata": {
           "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated"
         }
