@@ -24,7 +24,7 @@
             "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAZX53q2r7Y3/UaWd2oWtjP8wBnO4I46AfmJXZ/XhKbqNMKrnkHawVaTCid2wA7w2XXvYKUgNi6kDzp5AsRLxEmGoP0nvc8zTA59vVTsuiOT48trcB4lpk2VQ6lLbvazXwg2EKcskJGtxPstvinj4OFDs7iVxa7/BAMBJ+0DoLMYk3hV9Ipi7zwHjERpzwQE8HMQ9Sv+SqFLybBaIEtqPJT2e9y/yUo6i070eBzbDOXzpIwYfPc45nq8zyrPT/rdPj03FJ01UwwcKlfHm81yY56SUMRf2hen6yXm9OyHFeqTK6A3UpU2EFSfkD5Y/kDtMZjsNLmkLfdq5lUrKNatvH" // TODO: Fill in parameter value
         },
         "_artifactsLocation": {
-            "value": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/201-vmss-bottle-autoscale/"
+            "value": "https://raw.githubusercontent.com/henrikmotzkus/typo3/main/01_AzureEnvironment/01_INFRA/"
         },
         "_artifactsLocationSasToken": {
             "value": ""
