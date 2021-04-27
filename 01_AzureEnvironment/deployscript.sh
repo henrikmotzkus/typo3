@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RESOURCE_GROUP='typo3test12'
+RESOURCE_GROUP='typo3test13'
 LOCATION='westeurope'
 az group create --name $RESOURCE_GROUP --location $LOCATION
 az deployment group create -n typo3 -g $RESOURCE_GROUP -f ./System/01_AzureEnvironment/01_INFRA/azuredeploy.json -p ./System/01_AzureEnvironment/01_INFRA/azuredeploy.parameters.json --parameters vmssName=$RESOURCE_GROUP

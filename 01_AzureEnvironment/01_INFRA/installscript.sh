@@ -4,7 +4,7 @@
 sudo apt update
 sudo apt-get install software-properties-common -y
 sudo add-apt-repository ppa:ondrej/php -y
-
+sudo apt update
 
 sudo apt-get install nginx -y
 sudo systemctl stop nginx.service
