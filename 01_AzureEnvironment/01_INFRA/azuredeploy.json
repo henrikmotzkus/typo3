@@ -294,7 +294,7 @@
             "extensionProfile": {
               "extensions": [
                 {
-                  "name": "lapextension",
+                  "name": "typo3extension",
                   "properties": {
                     "publisher": "Microsoft.Azure.Extensions",
                     "type": "CustomScript",
