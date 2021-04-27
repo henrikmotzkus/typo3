@@ -1,9 +1,10 @@
 #!/bin/sh
 # This configurates the linuy typo3 worker node
 
-sudo apt-get install software-properties-common -y
-sudo add-apt-repository ppa:ondrej/php -q
 sudo apt update
+sudo apt-get install software-properties-common -y
+sudo add-apt-repository ppa:ondrej/php -y
+
 
 sudo apt-get install nginx
 sudo systemctl stop nginx.service
