@@ -1,5 +1,5 @@
 #!/bin/sh
-# This configurates the linuy typo3 worker node
+# This configurates the linux typo3 worker node
 
 sudo apt update
 sudo apt-get install software-properties-common -y
