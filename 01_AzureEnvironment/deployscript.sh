@@ -1,14 +1,15 @@
 #!/bin/sh
-
-RESOURCE_GROUP='typo3test21'
+az login
+az account set --subscription "Microsoft Azure Internal Consumption"
+RESOURCE_GROUP='typo3test23'
 LOCATION='westeurope'
 az group create --name $RESOURCE_GROUP --location $LOCATION
 az deployment group create -n typo3 -g $RESOURCE_GROUP -f ./System/01_AzureEnvironment/01_INFRA/azuredeploy.json -p ./System/01_AzureEnvironment/01_INFRA/azuredeploy.parameters.json --parameters vmssName=$RESOURCE_GROUP
 
+az group delete --name typo3test20 --yes &
+az group delete --name typo3test22 --yes &
 
-az login
 
-az account set --subscription "Microsoft Azure Internal Consumption"
 
 
 # Deploy INFRA
