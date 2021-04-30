@@ -16,7 +16,7 @@ return [
                 'charset' => 'utf8mb4',
                 'dbname' => 'cms1',
                 'driver' => 'pdo_mysql',
-                'host' => 'mysqlhenrik.mysql.database.azure.com',
+                'host' => 'database.tapo3.local',
                 'password' => 'Password123!',
                 'port' => 3306,
                 'tableoptions' => [
