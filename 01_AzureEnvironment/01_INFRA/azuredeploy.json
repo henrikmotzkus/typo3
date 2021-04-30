@@ -105,7 +105,7 @@
         }
       },
       "dbservername": "[concat(parameters('vmssName'), 'dbsrv')]",
-      "privatednszone": "typo3.local",
+      "privatednszone": "mysql.database.azure.com",
       "pename": "[concat(parameters('vmssName'), 'pe')]"
     },
     "resources": [
@@ -458,7 +458,7 @@
         {
             "type": "Microsoft.Network/privateDnsZones/A",
             "apiVersion": "2018-09-01",
-            "name": "[concat(variables('privatednszone'), '/database')]",
+            "name": "[concat(variables('privatednszone'), '/typo3test23dbsrv')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
             ],
