@@ -106,7 +106,8 @@
       },
       "dbservername": "[concat(parameters('vmssName'), 'dbsrv')]",
       "privatednszone": "mysql.database.azure.com",
-      "pename": "[concat(parameters('vmssName'), 'pe')]"
+      "pename": "[concat(parameters('vmssName'), 'pe')]",
+      "storageAccountName": "[concat(parameters('vmssName'), 'nfsstorage')]"
     },
     "resources": [
       {
@@ -381,186 +382,342 @@
         }
       },
       {
-            "type": "Microsoft.DBforMySQL/servers",
-            "apiVersion": "2017-12-01",
-            "name": "[variables('dbservername')]",
-            "location": "westeurope",
-            "sku": {
-                "name": "GP_Gen5_4",
-                "tier": "GeneralPurpose",
-                "family": "Gen5",
-                "capacity": 4
+        "type": "Microsoft.DBforMySQL/servers",
+        "apiVersion": "2017-12-01",
+        "name": "[variables('dbservername')]",
+        "location": "westeurope",
+        "sku": {
+            "name": "GP_Gen5_4",
+            "tier": "GeneralPurpose",
+            "family": "Gen5",
+            "capacity": 4
+        },
+        "properties": {
+            "storageProfile": {
+                "storageMB": 5120,
+                "backupRetentionDays": 7,
+                "geoRedundantBackup": "Disabled",
+                "storageAutogrow": "Enabled"
+                
             },
-            "properties": {
-                "storageProfile": {
-                    "storageMB": 5120,
-                    "backupRetentionDays": 7,
-                    "geoRedundantBackup": "Disabled",
-                    "storageAutogrow": "Enabled"
-                    
-                },
-                "version": "5.7",
-                "sslEnforcement": "Disabled",
-                "minimalTlsVersion": "TLSEnforcementDisabled",
-                "infrastructureEncryption": "Disabled",
-                "administratorLogin":"adminlocal",
-                "administratorLoginPassword":"Password123!",
-                "createMode": "Default",
-                "publicNetworkAccess": "Disabled"
-            }
-        },
-        {
-            "type": "Microsoft.DBforMySQL/servers/databases",
-            "apiVersion": "2017-12-01",
-            "name": "[concat(variables('dbservername'), '/cms1')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]"
-            ],
-            "properties": {
-                "charset": "utf8",
-                "collation": "utf8_general_ci"
-            }
-        },
-        {
-            "type": "Microsoft.DBforMySQL/servers/securityAlertPolicies",
-            "apiVersion": "2017-12-01",
-            "name": "[concat(variables('dbservername'), '/Default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]"
-            ],
-            "properties": {
-                "state": "Disabled",
-                "disabledAlerts": [
-                    ""
-                ],
-                "emailAddresses": [
-                    ""
-                ],
-                "emailAccountAdmins": false,
-                "retentionDays": 0
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2018-09-01",
-            "name": "[variables('privatednszone')]",
-            "location": "global",
-            "properties": {
-                "maxNumberOfRecordSets": 25000,
-                "maxNumberOfVirtualNetworkLinks": 1000,
-                "maxNumberOfVirtualNetworkLinksWithRegistration": 100,
-                "numberOfRecordSets": 2,
-                "numberOfVirtualNetworkLinks": 1,
-                "numberOfVirtualNetworkLinksWithRegistration": 0,
-                "provisioningState": "Succeeded"
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones/A",
-            "apiVersion": "2018-09-01",
-            "name": "[concat(variables('privatednszone'), '/typo3test23dbsrv')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
-            ],
-            "properties": {
-                "metadata": {
-                    "creator": "created by private endpoint mysql-pe"
-                },
-                "ttl": 10,
-                "aRecords": [
-                    {
-                        "ipv4Address": "10.0.0.5"
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones/SOA",
-            "apiVersion": "2018-09-01",
-            "name": "[concat(variables('privatednszone'), '/@')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
-            ],
-            "properties": {
-                "ttl": 3600,
-                "soaRecord": {
-                    "email": "azureprivatedns-host.microsoft.com",
-                    "expireTime": 2419200,
-                    "host": "azureprivatedns.net",
-                    "minimumTtl": 10,
-                    "refreshTime": 3600,
-                    "retryTime": 300,
-                    "serialNumber": 1
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2018-09-01",
-            "name": "[concat(variables('privatednszone'), '/',variables('privatednszone'),'-link')]",
-            "location": "global",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-            ],
-            "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-11-01",
-            "name": "[variables('pename')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-            ],
-            "properties": {
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "[variables('pename')]",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]",
-                            "groupIds": [
-                                "mysqlServer"
-                            ],
-                            "privateLinkServiceConnectionState": {
-                                "status": "Approved",
-                                "description": "Auto-approved",
-                                "actionsRequired": "None"
-                            }
-                        }
-                    }
-                ],
-                "manualPrivateLinkServiceConnections": [],
-                "subnet": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
-                },
-                "customDnsConfigs": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(variables('pename'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateEndpoints', variables('pename'))]",
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
-            ],
-            "properties": {
-                "privateDnsZoneConfigs": [
-                    {
-                        "name": "privatelink-mysql-database-azure-com",
-                        "properties": {
-                            "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
-                        }
-                    }
-                ]
-            }
+            "version": "5.7",
+            "sslEnforcement": "Disabled",
+            "minimalTlsVersion": "TLSEnforcementDisabled",
+            "infrastructureEncryption": "Disabled",
+            "administratorLogin":"adminlocal",
+            "administratorLoginPassword":"Password123!",
+            "createMode": "Default",
+            "publicNetworkAccess": "Disabled"
         }
+      },
+      {
+          "type": "Microsoft.DBforMySQL/servers/databases",
+          "apiVersion": "2017-12-01",
+          "name": "[concat(variables('dbservername'), '/cms1')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]"
+          ],
+          "properties": {
+              "charset": "utf8",
+              "collation": "utf8_general_ci"
+          }
+      },
+      {
+          "type": "Microsoft.DBforMySQL/servers/securityAlertPolicies",
+          "apiVersion": "2017-12-01",
+          "name": "[concat(variables('dbservername'), '/Default')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]"
+          ],
+          "properties": {
+              "state": "Disabled",
+              "disabledAlerts": [
+                  ""
+              ],
+              "emailAddresses": [
+                  ""
+              ],
+              "emailAccountAdmins": false,
+              "retentionDays": 0
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateDnsZones",
+          "apiVersion": "2018-09-01",
+          "name": "[variables('privatednszone')]",
+          "location": "global",
+          "properties": {
+              "maxNumberOfRecordSets": 25000,
+              "maxNumberOfVirtualNetworkLinks": 1000,
+              "maxNumberOfVirtualNetworkLinksWithRegistration": 100,
+              "numberOfRecordSets": 2,
+              "numberOfVirtualNetworkLinks": 1,
+              "numberOfVirtualNetworkLinksWithRegistration": 0,
+              "provisioningState": "Succeeded"
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateDnsZones/A",
+          "apiVersion": "2018-09-01",
+          "name": "[concat(variables('privatednszone'), '/typo3test23dbsrv')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
+          ],
+          "properties": {
+              "metadata": {
+                  "creator": "created by private endpoint mysql-pe"
+              },
+              "ttl": 10,
+              "aRecords": [
+                  {
+                      "ipv4Address": "10.0.0.5"
+                  }
+              ]
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateDnsZones/SOA",
+          "apiVersion": "2018-09-01",
+          "name": "[concat(variables('privatednszone'), '/@')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
+          ],
+          "properties": {
+              "ttl": 3600,
+              "soaRecord": {
+                  "email": "azureprivatedns-host.microsoft.com",
+                  "expireTime": 2419200,
+                  "host": "azureprivatedns.net",
+                  "minimumTtl": 10,
+                  "refreshTime": 3600,
+                  "retryTime": 300,
+                  "serialNumber": 1
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+          "apiVersion": "2018-09-01",
+          "name": "[concat(variables('privatednszone'), '/',variables('privatednszone'),'-link')]",
+          "location": "global",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]",
+              "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+          ],
+          "properties": {
+              "registrationEnabled": false,
+              "virtualNetwork": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateEndpoints",
+          "apiVersion": "2020-11-01",
+          "name": "[variables('pename')]",
+          "location": "westeurope",
+          "dependsOn": [
+              "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]",
+              "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+          ],
+          "properties": {
+              "privateLinkServiceConnections": [
+                  {
+                      "name": "[variables('pename')]",
+                      "properties": {
+                          "privateLinkServiceId": "[resourceId('Microsoft.DBforMySQL/servers', variables('dbservername'))]",
+                          "groupIds": [
+                              "mysqlServer"
+                          ],
+                          "privateLinkServiceConnectionState": {
+                              "status": "Approved",
+                              "description": "Auto-approved",
+                              "actionsRequired": "None"
+                          }
+                      }
+                  }
+              ],
+              "manualPrivateLinkServiceConnections": [],
+              "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+              },
+              "customDnsConfigs": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+          "apiVersion": "2020-11-01",
+          "name": "[concat(variables('pename'), '/default')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/privateEndpoints', variables('pename'))]",
+              "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
+          ],
+          "properties": {
+              "privateDnsZoneConfigs": [
+                  {
+                      "name": "privatelink-mysql-database-azure-com",
+                      "properties": {
+                          "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privatednszone'))]"
+                      }
+                  }
+              ]
+          }
+      },
+      {
+        "name": "[variables('storageAccountName')]",
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2019-06-01",
+        "location": "[parameters('location')]",
+        "properties": {
+            "minimumTlsVersion": "TLS1_2",
+            "supportsHttpsTrafficOnly": true,
+            "allowBlobPublicAccess": false,
+            "allowSharedKeyAccess": false,
+            "networkAcls": {
+                "defaultAction": "Deny",
+                "ipRules": []
+            }
+        },
+        "dependsOn": [],
+        "sku": {
+            "name": "Premium_LRS"
+        },
+        "kind": "FileStorage",
+        "tags": {}
+      },
+      {
+          "name": "[concat(variables('storageAccountName'), '/default')]",
+          "type": "Microsoft.Storage/storageAccounts/fileservices",
+          "apiVersion": "2019-06-01",
+          "properties": {
+              "shareDeleteRetentionPolicy": {
+                  "enabled": true,
+                  "days": 7
+              }
+          },
+          "dependsOn": [
+              "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+          ]
+      },
+      {
+          "apiVersion": "2020-10-01",
+          "type": "Microsoft.Resources/deployments",
+          "name": "nfsprivateEndpoint",
+          "subscriptionId": "2abc2ec1-2238-430d-bf52-40cb7dc8b652",
+          "resourceGroup": "[parameters('location')]",
+          "dependsOn": [
+              "Microsoft.Storage/storageAccounts/nfsstoragetypo3"
+          ],
+          "resources": [],
+          "properties": {
+              "mode": "Incremental",
+              "parameters": {
+                  "privateEndpointName": {
+                      "value": "nfspe"
+                  },
+                  "privateEndpointConnectionName": {
+                      "value": "nfspe"
+                  },
+                  "privateLinkServiceId": {
+                      "value": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                  },
+                  "groupId": {
+                      "value": "file"
+                  },
+                  "subnetId": {
+                      "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+                  },
+                  "location": {
+                      "value": "westeurope"
+                  },
+                  "tags": {
+                      "value": {}
+                  }
+              },
+              "templatelink": {
+                  "contentVersion": "1.0.0.0",
+                  "uri": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateEndpointForStorage.json"
+              }
+          }
+      },
+      {
+          "apiVersion": "2018-05-01",
+          "name": "nfsPrivateDns",
+          "type": "Microsoft.Resources/deployments",
+          "resourceGroup": "[parameters('location')]",
+          "dependsOn": [
+              "[string('nfsprivateEndpoint')]"
+          ],
+          "properties": {
+              "mode": "Incremental",
+              "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": [
+                      {
+                          "type": "Microsoft.Network/privateDnsZones",
+                          "apiVersion": "2018-09-01",
+                          "name": "[string('privatelink.file.core.windows.net')]",
+                          "location": "global",
+                          "tags": {},
+                          "properties": {}
+                      },
+                      {
+                          "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                          "apiVersion": "2018-09-01",
+                          "name": "[concat(string('privatelink.file.core.windows.net'), '/vnetlink')]",
+                          "location": "global",
+                          "dependsOn": [
+                              "[string('privatelink.file.core.windows.net')]"
+                          ],
+                          "properties": {
+                              "virtualNetwork": {
+                                  "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+                              },
+                              "registrationEnabled": false
+                          }
+                      },
+                      {
+                          "apiVersion": "2017-05-10",
+                          "name": "nfsEndpointDnsRecord",
+                          "type": "Microsoft.Resources/deployments",
+                          "dependsOn": [
+                              "[string('privatelink.file.core.windows.net')]"
+                          ],
+                          "properties": {
+                              "mode": "Incremental",
+                              "templatelink": {
+                                  "contentVersion": "1.0.0.0",
+                                  "uri": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateDnsForPrivateEndpoint.json"
+                              },
+                              "parameters": {
+                                  "privateDnsName": {
+                                      "value": "[string('privatelink.file.core.windows.net')]"
+                                  },
+                                  "privateEndpointNicResourceId": {
+                                      "value": "[reference('nfsprivateEndpoint').outputs.networkInterfaceId.value]"
+                                  },
+                                  "nicRecordsTemplateUri": {
+                                      "value": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateDnsForPrivateEndpointNic.json"
+                                  },
+                                  "ipConfigRecordsTemplateUri": {
+                                      "value": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateDnsForPrivateEndpointIpConfig.json"
+                                  },
+                                  "uniqueId": {
+                                      "value": "0.31003212878805697"
+                                  },
+                                  "existingRecords": {
+                                      "value": {}
+                                  }
+                              }
+                          }
+                      }
+                  ]
+              }
+          },
+          "subscriptionId": "[string('2abc2ec1-2238-430d-bf52-40cb7dc8b652')]"
+          }
+  
+    
     ]
   }
