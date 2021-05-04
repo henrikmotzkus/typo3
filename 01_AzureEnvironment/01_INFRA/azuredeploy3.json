@@ -5,116 +5,102 @@
         "location": {
             "type": "string"
         },
-        "storageAccountName": {
-            "type": "string"
-        },
-        "accountType": {
-            "type": "string"
-        },
-        "kind": {
-            "type": "string"
-        },
-        "minimumTlsVersion": {
-            "type": "string"
-        },
-        "supportsHttpsTrafficOnly": {
-            "type": "bool"
-        },
-        "allowBlobPublicAccess": {
-            "type": "bool"
-        },
-        "allowSharedKeyAccess": {
-            "type": "bool"
-        },
-        "networkAclsBypass": {
-            "type": "string"
-        },
-        "networkAclsDefaultAction": {
-            "type": "string"
-        },
-        "isShareSoftDeleteEnabled": {
-            "type": "bool"
-        },
-        "shareSoftDeleteRetentionDays": {
-            "type": "int"
+         "vmssName": {
+        "type": "string",
+        "metadata": {
+          "description": "String used as a base for naming resources (9 characters or less). A hash is prepended to this string for some resources, and resource-specific information is appended."
         }
+      }
     },
     "variables": {
-        "penamenfsstorage": "[concat(parameters('vmssName'), 'nfspe')]",
+        "storageAccountName": "[concat(parameters('vmssName'), 'nfsstorage')]",
 
     },
     "resources": [
         {
-            "name": "[parameters('storageAccountName')]",
+            "name": "[variables('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[parameters('location')]",
             "properties": {
-                "minimumTlsVersion": "[parameters('minimumTlsVersion')]",
-                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]",
-                "allowBlobPublicAccess": "[parameters('allowBlobPublicAccess')]",
-                "allowSharedKeyAccess": "[parameters('allowSharedKeyAccess')]",
+                "minimumTlsVersion": "1.2",
+                "supportsHttpsTrafficOnly": true,
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": false,
                 "networkAcls": {
-                    "bypass": "[parameters('networkAclsBypass')]",
-                    "defaultAction": "[parameters('networkAclsDefaultAction')]",
+                    "defaultAction": "Deny",
                     "ipRules": []
                 }
             },
             "dependsOn": [],
             "sku": {
-                "name": "[parameters('accountType')]"
+                "name": "Premium_LRS"
             },
-            "kind": "[parameters('kind')]",
+            "kind": "FileStorage",
             "tags": {}
         },
         {
-            "name": "[concat(parameters('storageAccountName'), '/default')]",
+            "name": "[concat(variables('storageAccountName'), '/default')]",
             "type": "Microsoft.Storage/storageAccounts/fileservices",
             "apiVersion": "2019-06-01",
             "properties": {
                 "shareDeleteRetentionPolicy": {
-                    "enabled": "[parameters('isShareSoftDeleteEnabled')]",
-                    "days": "[parameters('shareSoftDeleteRetentionDays')]"
+                    "enabled": "true",
+                    "days": "7"
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
             ]
         },
         {
-            "apiVersion": "2019-04-01",
-            "name": "[variables('penamenfsstorage')]",
-            "type": "Microsoft.Network/privateEndpoints",
-            "location": "[parameters('location')]",
+            "apiVersion": "2019-06-01",
+            "type": "Microsoft.Resources/deployments",
+            "name": "nfsprivateEndpoint",
+            "subscriptionId": "2abc2ec1-2238-430d-bf52-40cb7dc8b652",
+            "resourceGroup": "typo3test23",
+            "dependsOn": [
+                "Microsoft.Storage/storageAccounts/nfsstoragetypo3"
+            ],
+            "resources": [],
             "properties": {
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "[variables('penamenfsstorage')]",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('penamenfsstorage'))]",
-                            "groupIds": [
-                                "nfsstorage"
-                            ]
-                        }
+                "mode": "Incremental",
+                "parameters": {
+                    "privateEndpointName": {
+                        "value": "nfspe"
+                    },
+                    "privateEndpointConnectionName": {
+                        "value": "nfspe"
+                    },
+                    "privateLinkServiceId": {
+                        "value": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                    },
+                    "groupId": {
+                        "value": "file"
+                    },
+                    "subnetId": {
+                        "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+                    },
+                    "location": {
+                        "value": "westeurope"
+                    },
+                    "tags": {
+                        "value": {}
                     }
-                ],
-                "manualPrivateLinkServiceConnections": [],
-                "subnet": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+                },
+                "templatelink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateEndpointForStorage.json"
                 }
             }
         },
-
-
-
-       
         {
             "apiVersion": "2018-05-01",
-            "name": "PrivateDns-0.31003212878805697",
+            "name": "nfsPrivateDns",
             "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[string('typo3test23')]",
+            "resourceGroup": "[parameters('location')]",
             "dependsOn": [
-                "[string('privateEndpoints_0.38937831085722596')]"
+                "[string('nfsprivateEndpoint')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -140,14 +126,14 @@
                             ],
                             "properties": {
                                 "virtualNetwork": {
-                                    "id": "[string('/subscriptions/2abc2ec1-2238-430d-bf52-40cb7dc8b652/resourceGroups/typo3test23/providers/Microsoft.Network/virtualNetworks/typo3test23vnet')]"
+                                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
                                 },
                                 "registrationEnabled": false
                             }
                         },
                         {
                             "apiVersion": "2017-05-10",
-                            "name": "EndpointDnsRecords-0.31003212878805697",
+                            "name": "nfsEndpointDnsRecord",
                             "type": "Microsoft.Resources/deployments",
                             "dependsOn": [
                                 "[string('privatelink.file.core.windows.net')]"
@@ -163,7 +149,7 @@
                                         "value": "[string('privatelink.file.core.windows.net')]"
                                     },
                                     "privateEndpointNicResourceId": {
-                                        "value": "[reference('privateEndpoints_0.38937831085722596').outputs.networkInterfaceId.value]"
+                                        "value": "[reference('nfsprivateEndpoint').outputs.networkInterfaceId.value]"
                                     },
                                     "nicRecordsTemplateUri": {
                                         "value": "https://storage.hosting.portal.azure.net/storage/Content/4.13.393.248/DeploymentTemplates/PrivateDnsForPrivateEndpointNic.json"
